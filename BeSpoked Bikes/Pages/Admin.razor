@@ -1,0 +1,146 @@
+﻿@page "/Admin"
+
+@using System.ComponentModel.DataAnnotations
+@using BeSpoked_Bikes.Data
+@using BeSpoked_Bikes.Models
+@using Microsoft.AspNetCore.Identity
+@inject IUserReg userReg
+@inject NavigationManager NavigationManager
+
+<h3>Admin</h3>
+
+
+<p style="color:red">@errorMessage</p>
+<EditForm Model="@newUser" OnValidSubmit="@testEmail">
+     <DataAnnotationsValidator />
+    <ValidationSummary />
+      <InputText id="Fname" placeholder="Enter first name" @bind-Value="@newUser.FirstName" />
+        <InputText id="lname" placeholder="Enter last name" @bind-Value="@newUser.LastName" />
+          <InputText id="address" placeholder="Enter address" @bind-Value="@newUser.Address" />
+            <InputText id="phone" placeholder="Enter phone" @bind-Value="@newUser.phone" />
+            
+      <InputDate id="startDate" @bind-Value="@newUser.StartDate"/>
+      <InputCheckbox id="man" @bind-Value="@newUser.Manager"/>
+      <InputText id="Email" placeholder="Enter email" @bind-Value="@newUser.Email" />
+    <InputText id="Password" type="password" placeholder="Enter password" @bind-Value="@newUser.Password" />
+    <InputText id="Passwordcon" type="password"  placeholder="Enter password" @bind-Value="@newUser.PasswordConfirm" />
+       <button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
+@if(Users is null)
+{
+    <p><em>Loading...</em></p>
+}else{
+       <table class=" table table-striped">
+           <thead>
+               <tr>
+                   <th>First Name </th>
+                    <th>Last Name </th>
+                     <th>Email </th>
+                      <th>Managaer </th>
+                      <th>End date</th>
+               </tr>
+           </thead>
+           <tbody  >
+                @foreach(var user in Users)
+                {
+                    <tr>
+                        <td >@user.FirstName </td>
+                            <td >@user.LastName </td>
+                                <td >@user.Email </td>
+                                    <td >@user.Manager </td>
+                                        <td >@user.EndDate </td>
+                    </tr>
+                }
+            </tbody>
+
+       </table>
+        
+    }
+
+
+
+
+
+
+@code {
+    private List<ApplicationUser> Users;
+    string errorMessage;
+    protected override async Task OnInitializedAsync()
+    {
+        Users = await userReg.getUser();
+
+
+    }
+
+    public class regusterViewModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; }
+        [Display(Name =" Confrim Password")]
+        [DataType(DataType.Password)]
+        [Compare("Password",ErrorMessage ="Password do not match")]
+        public string PasswordConfirm { get; set; }
+
+        [Required]
+        [StringLength(25, ErrorMessage = "First name is too long")]
+        public string FirstName { get; set; }
+        [Required]
+        [StringLength(25, ErrorMessage = "Last name is too long")]
+        public string LastName { get; set; }
+        [Required]
+        public string Address { get; set; }
+        [Required]
+        [Phone]
+        [StringLength(14, ErrorMessage = "enter number in X-XXX-XXX-XXXX format")]
+        [MinLength(14, ErrorMessage = "enter number in X-XXX-XXX-XXXX format")]
+        public string phone { get; set; }
+        [Required]
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        [Required]
+        public bool Manager { get; set; }
+    }
+    private regusterViewModel newUser = new regusterViewModel();
+    private async Task testEmail()
+    {
+        var hold = await userReg.IsEmailUsed(newUser.Email);
+        if (hold)
+        {
+            errorMessage = "User already in database";
+        }
+        else
+        {
+            await createSalesPerson();
+        }
+    }
+    private async Task createSalesPerson()
+    {
+
+        var user = new ApplicationUser
+            {
+                Email = newUser.Email,
+                UserName=newUser.Email,
+                FirstName= newUser.FirstName,
+                LastName=newUser.LastName,
+                Address=newUser.Address,
+                phone=newUser.phone,
+                StartDate=newUser.StartDate,
+                Manager=newUser.Manager,
+                EndDate= null
+            };
+
+        var hold=   await userReg.CreateUser(user, newUser.Password);
+        if (hold.ToString().Contains("Failed"))
+        {
+            errorMessage = hold.ToString();
+        }
+        else
+        {
+            NavigationManager.NavigateTo("Admin", true);
+        }
+    }
+}

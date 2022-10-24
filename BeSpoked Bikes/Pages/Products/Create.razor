@@ -1,0 +1,67 @@
+﻿@page "/products/create"
+@using BeSpoked_Bikes.Models
+@using BeSpoked_Bikes.Data
+@inject IProductsContoller _controller
+@inject NavigationManager NavigationManager
+<h1>Create</h1>
+
+<h4>Product</h4>
+<hr />
+
+<EditForm Model="@product" OnValidSubmit="@create">
+     <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="row">
+    <div class="col-md-4">
+       
+            <div class="form-group">
+                <label  class="control-label">Bike name </label>
+                <InputText @bind-Value="product.Name" class="form-control" />
+                <span  class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label  class="control-label">Manufacturer</label>
+                <InputText @bind-Value="product.Manufacturer"  class="form-control" />
+                <span class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label  class="control-label">Stlye </label>
+                <InputText @bind-Value="product.Style"  class="form-control" />
+                <span class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">purchase Price</label>
+                <InputNumber @bind-Value="product.purchasePrice"  class="form-control" />
+                <span  class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Sale Price</label>
+               <InputNumber  @bind-Value="product.SalePrice"  class="form-control" />
+                <span class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label  class="control-label">inventory</label>
+                <InputNumber @bind-Value="product.inventory"   class="form-control" />
+                <span  class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">commission</label>
+                <InputNumber @bind-Value="product.commission"   class="form-control" />
+                <span class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+      
+    </div>
+</div>
+</EditForm>
+@code {
+    private Product product = new Product();
+    private async Task create()
+    {
+        await _controller.Create(product);
+        NavigationManager.NavigateTo("Index", true);
+    }
+
+}
